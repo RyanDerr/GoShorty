@@ -65,8 +65,20 @@ func ShortenURL(c *fiber.Ctx) error {
 		return err
 	}
 
+	resp := response{
+		URL:                body.URL,
+		CustomShort:        id,
+		Expiration:         body.Expiration,
+		RateLimitRemaining: 10,
+		RateLimitReset:     30 * time.Minute,
+	}
+
 	//Decrement rate limit
 	r2.Decr(database.Ctx, c.IP())
+
+	populateResponse(c, &resp, r2)
+
+	return c.Status(fiber.StatusCreated).JSON(resp)
 }
 
 func validateURL(url string) error {
@@ -126,4 +138,14 @@ func saveURL(r *redis.Client, id string, url string, expiration time.Duration) e
 		return fiber.NewError(fiber.StatusInternalServerError, "Internal Server Error")
 	}
 	return nil
+}
+
+func populateResponse(ctx *fiber.Ctx, resp *response, r *redis.Client) {
+	remRate, _ := r.Get(database.Ctx, ctx.IP()).Result()
+	resp.RateLimitRemaining, _ = strconv.Atoi(remRate)
+
+	ttl, _ := r.TTL(database.Ctx, ctx.IP()).Result()
+	resp.RateLimitReset = ttl * time.Minute
+
+	resp.CustomShort = os.Getenv("BASE_URL") + "/" + resp.CustomShort
 }
