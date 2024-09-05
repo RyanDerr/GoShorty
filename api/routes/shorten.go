@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/asaskevich/govalidator"
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 	"github.com/redis/go-redis/v9"
@@ -41,45 +42,43 @@ func ShortenURL(c *fiber.Ctx) error {
 		return err
 	}
 
-	if !govalidator.IsURL(body.URL) {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid URL"})
-	}
-
-	if !helpers.RemoveDomainError(body.URL) {
-		return c.Status(fiber.StatusServiceUnavailable).JSON(fiber.Map{"error": "You cannot shorten this URL"})
+	if err := validateURL(body.URL); err != nil {
+		return err
 	}
 
 	body.URL = helpers.EnforceHTTPS(body.URL)
 
-	var id string
-
-	if body.CustomShort == "" {
-		id = uuid.New().String()[:6]
-	} else {
-		id = body.CustomShort
-	}
+	id := generateID(body.CustomShort)
 
 	r := database.CreateClient(0)
 	defer r.Close()
 
-	val, _ := r.Get(database.Ctx, id).Result()
-
-	if val != "" {
-		return c.Status(fiber.StatusForbidden).JSON(fiber.Map{"error": "URL short is already in use."})
+	if err := checkURLInUse(r, id); err != nil {
+		return err
 	}
 
 	if body.Expiration == 0 {
 		body.Expiration = 24 * time.Hour
 	}
 
-	setDBError := r.Set(database.Ctx, id, body.URL, body.Expiration).Err()
-
-	if setDBError != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Internal Server Error"})
+	if err := saveURL(r, id, body.URL, body.Expiration); err != nil {
+		return err
 	}
 
 	//Decrement rate limit
 	r2.Decr(database.Ctx, c.IP())
+}
+
+func validateURL(url string) error {
+	if !govalidator.IsURL(url) {
+		return fiber.NewError(fiber.StatusBadRequest, "Invalid URL")
+	}
+
+	if !helpers.RemoveDomainError(url) {
+		return fiber.NewError(fiber.StatusServiceUnavailable, "You cannot shorten this URL")
+	}
+
+	return nil
 }
 
 func handleRateLimiting(c *fiber.Ctx, rc *redis.Client) error {
@@ -103,5 +102,28 @@ func handleRateLimiting(c *fiber.Ctx, rc *redis.Client) error {
 		}
 	}
 
+	return nil
+}
+
+func generateID(customShort string) string {
+	if customShort == "" {
+		return uuid.New().String()[:6]
+	}
+	return customShort
+}
+
+func checkURLInUse(r *redis.Client, id string) error {
+	val, _ := r.Get(database.Ctx, id).Result()
+	if val != "" {
+		return fiber.NewError(fiber.StatusForbidden, "URL short is already in use.")
+	}
+	return nil
+}
+
+func saveURL(r *redis.Client, id string, url string, expiration time.Duration) error {
+	err := r.Set(database.Ctx, id, url, expiration).Err()
+	if err != nil {
+		return fiber.NewError(fiber.StatusInternalServerError, "Internal Server Error")
+	}
 	return nil
 }
