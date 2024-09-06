@@ -1,2 +1,2 @@
 # go-url-shortner
-Sample Application To Learn Go
+Sample URL Shortener Application To Learn Go
