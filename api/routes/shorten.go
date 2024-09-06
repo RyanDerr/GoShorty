@@ -1,7 +1,6 @@
 package routes
 
 import (
-	"fmt"
 	"log"
 	"os"
 	"ryan-golang-url-shortener/database"
@@ -42,9 +41,15 @@ func ShortenURL(c *fiber.Ctx) error {
 	rateLimitDB := database.CreateClient(1)
 	defer rateLimitDB.Close()
 
-	if err := handleRateLimiting(c, rateLimitDB); err != nil {
+	if limit, err := handleRateLimiting(c, rateLimitDB); err != nil {
 		log.Printf("Rate limiting error: %v", err)
 		return err
+	} else if limit > 0 {
+		log.Printf("Rate limit exceeded for %v", c.IP())
+		return c.Status(fiber.StatusTooManyRequests).JSON(fiber.Map{
+			"error":            "Rate limit exceeded",
+			"rate_limit_reset": limit,
+		})
 	}
 
 	if err := validateURL(body.URL); err != nil {
@@ -102,26 +107,25 @@ func validateURL(url string) error {
 	return nil
 }
 
-func handleRateLimiting(c *fiber.Ctx, rc *redis.Client) error {
+func handleRateLimiting(c *fiber.Ctx, rc *redis.Client) (time.Duration, error) {
 	val, err := rc.Get(database.Ctx, c.IP()).Result()
 
 	//Check to see if the IP address is in the database
 	if err == redis.Nil {
 		rc.Set(database.Ctx, c.IP(), os.Getenv("API_QUOTA"), 30*time.Minute).Err()
+		return 0, nil
 	} else if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Internal Server Error"})
-	} else {
-		// Find the current rate limit and determine if limit is exceeded
-		valInt, _ := strconv.Atoi(val)
-		log.Printf("Rate limit remaining: %v", valInt)
-
-		if valInt <= 0 {
-			limit, _ := rc.TTL(database.Ctx, c.IP()).Result()
-			return fiber.NewError(fiber.StatusServiceUnavailable, "Rate limit exceeded. Try again in "+fmt.Sprint(limit))
-		}
+		return 0, c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Internal Server Error"})
 	}
+	// Find the current rate limit and determine if limit is exceeded
+	valInt, _ := strconv.Atoi(val)
 
-	return nil
+	if valInt <= 0 {
+		limit, _ := rc.TTL(database.Ctx, c.IP()).Result()
+		return limit, nil
+	}
+	
+	return 0, nil
 }
 
 func generateID(customShort string) string {
