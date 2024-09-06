@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"ryan-golang-url-shortener/database"
@@ -34,14 +35,14 @@ func ShortenURL(c *fiber.Ctx) error {
 
 	if err := c.BodyParser(&body); err != nil {
 		log.Printf("Error parsing request body: %v\n", err)
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid request body"})
+		return err
 	}
 
 	//Rate limit with redis in memory database based on IP address
-	r2 := database.CreateClient(1)
-	defer r2.Close()
+	rateLimitDB := database.CreateClient(1)
+	defer rateLimitDB.Close()
 
-	if err := handleRateLimiting(c, r2); err != nil {
+	if err := handleRateLimiting(c, rateLimitDB); err != nil {
 		log.Printf("Rate limiting error: %v", err)
 		return err
 	}
@@ -56,10 +57,10 @@ func ShortenURL(c *fiber.Ctx) error {
 	id := generateID(body.CustomShort)
 	log.Printf("Generated ID: %s", id)
 
-	r := database.CreateClient(0)
-	defer r.Close()
+	customShortDB := database.CreateClient(0)
+	defer customShortDB.Close()
 
-	if err := checkURLInUse(r, id); err != nil {
+	if err := checkURLInUse(customShortDB, id); err != nil {
 		return err
 	}
 
@@ -67,7 +68,7 @@ func ShortenURL(c *fiber.Ctx) error {
 		body.Expiration = 24 * time.Hour
 	}
 
-	if err := saveURL(r, id, body.URL, body.Expiration); err != nil {
+	if err := saveURL(customShortDB, id, body.URL, body.Expiration); err != nil {
 		log.Printf("URL already in use: %v", err)
 		return err
 	}
@@ -81,9 +82,9 @@ func ShortenURL(c *fiber.Ctx) error {
 	}
 
 	//Decrement rate limit
-	r2.Decr(database.Ctx, c.IP())
+	rateLimitDB.Decr(database.Ctx, c.IP())
 
-	populateResponse(c, &resp, r2)
+	populateResponse(c, &resp, customShortDB)
 	log.Printf("Generated url %v for origin %v", resp.CustomShort, resp.URL)
 
 	return c.Status(fiber.StatusCreated).JSON(resp)
@@ -112,13 +113,11 @@ func handleRateLimiting(c *fiber.Ctx, rc *redis.Client) error {
 	} else {
 		// Find the current rate limit and determine if limit is exceeded
 		valInt, _ := strconv.Atoi(val)
+		log.Printf("Rate limit remaining: %v", valInt)
 
 		if valInt <= 0 {
 			limit, _ := rc.TTL(database.Ctx, c.IP()).Result()
-			return c.Status(fiber.StatusServiceUnavailable).JSON(fiber.Map{
-				"error":            "Rate limit exceeded!",
-				"rate_limit_reset": limit.Minutes(),
-			})
+			return fiber.NewError(fiber.StatusServiceUnavailable, "Rate limit exceeded. Try again in "+fmt.Sprint(limit))
 		}
 	}
 

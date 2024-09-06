@@ -9,24 +9,25 @@ import (
 )
 
 func ResolveURL(c *fiber.Ctx) error {
-	url := c.Params("url")
+	short := c.Params("url")
 	r := database.CreateClient(0)
 	defer r.Close()
 
-	res, err := r.Get(database.Ctx, url).Result()
+	log.Printf("Attempting to retrieve entry for %v", short)
+	res, err := r.Get(database.Ctx, short).Result()
 
-	if err != redis.Nil {
-		log.Println("URL short not found:", url)
+	if err == redis.Nil {
+		log.Printf("URL short not found for short %v \n", short)
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "URL short not found"})
 	} else if err != nil {
-		log.Println("Error retrieving URL from Redis:", err)
+		log.Printf("Error retrieving URL from Redis: %v \n", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Internal Server Error"})
 	}
 
 	rInf := database.CreateClient(1)
 	defer rInf.Close()
 
-	_ = rInf.Incr(database.Ctx, "counter")
+	_ = rInf.Incr(database.Ctx, c.IP())
 
 	log.Println("Redirecting to:", res)
 	return c.Redirect(res, fiber.StatusMovedPermanently)
