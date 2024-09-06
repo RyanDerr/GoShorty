@@ -21,11 +21,11 @@ type request struct {
 }
 
 type response struct {
-	URL                string        `json:"url"`
-	CustomShort        string        `json:"short"`
-	Expiration         time.Duration `json:"expiration"`
-	RateLimitRemaining int           `json:"rate_limit"`
-	RateLimitReset     time.Duration `json:"rate_limit_reset"`
+	URL                string `json:"url"`
+	CustomShort        string `json:"short"`
+	Expiration         string `json:"expiration"`
+	RateLimitRemaining int    `json:"rate_limit"`
+	RateLimitReset     string `json:"rate_limit_reset"`
 }
 
 func ShortenURL(c *fiber.Ctx) error {
@@ -48,7 +48,7 @@ func ShortenURL(c *fiber.Ctx) error {
 		log.Printf("Rate limit exceeded for %v", c.IP())
 		return c.Status(fiber.StatusTooManyRequests).JSON(fiber.Map{
 			"error":            "Rate limit exceeded",
-			"rate_limit_reset": limit,
+			"rate_limit_reset": limit.String(),
 		})
 	}
 
@@ -78,18 +78,10 @@ func ShortenURL(c *fiber.Ctx) error {
 		return err
 	}
 
-	resp := response{
-		URL:                body.URL,
-		CustomShort:        id,
-		Expiration:         body.Expiration,
-		RateLimitRemaining: 10,
-		RateLimitReset:     30 * time.Minute,
-	}
-
 	//Decrement rate limit
 	rateLimitDB.Decr(database.Ctx, c.IP())
 
-	populateResponse(c, &resp, customShortDB)
+	resp := populateResponse(c, rateLimitDB, body, id)
 	log.Printf("Generated url %v for origin %v", resp.CustomShort, resp.URL)
 
 	return c.Status(fiber.StatusCreated).JSON(resp)
@@ -124,7 +116,7 @@ func handleRateLimiting(c *fiber.Ctx, rc *redis.Client) (time.Duration, error) {
 		limit, _ := rc.TTL(database.Ctx, c.IP()).Result()
 		return limit, nil
 	}
-	
+
 	return 0, nil
 }
 
@@ -151,12 +143,17 @@ func saveURL(r *redis.Client, id string, url string, expiration time.Duration) e
 	return nil
 }
 
-func populateResponse(ctx *fiber.Ctx, resp *response, r *redis.Client) {
-	remRate, _ := r.Get(database.Ctx, ctx.IP()).Result()
+func populateResponse(ctx *fiber.Ctx, rateLimitDB *redis.Client, req *request, id string) *response {
+	resp := new(response)
+	resp.URL = req.URL
+	resp.CustomShort = os.Getenv("DOMAIN") + "/" + id
+	resp.Expiration = req.Expiration.String()
+
+	remRate, _ := rateLimitDB.Get(database.Ctx, ctx.IP()).Result()
 	resp.RateLimitRemaining, _ = strconv.Atoi(remRate)
 
-	ttl, _ := r.TTL(database.Ctx, ctx.IP()).Result()
-	resp.RateLimitReset = ttl * time.Minute
+	ttl, _ := rateLimitDB.TTL(database.Ctx, ctx.IP()).Result()
+	resp.RateLimitReset = ttl.String()
 
-	resp.CustomShort = os.Getenv("DOMAIN") + "/" + resp.CustomShort
+	return resp
 }
