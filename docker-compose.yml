@@ -1,0 +1,18 @@
+services:
+  api: 
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    image: goshorty-api:local
+    container_name: api
+    environment:
+      APP_ENV: "local"
+    ports:
+      - "3000:3000"
+    depends_on:
+      - db
+  db: 
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+    container_name: db

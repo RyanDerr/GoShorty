@@ -1,0 +1,79 @@
+basePath: /
+definitions:
+  routes.ErrorResponse:
+    properties:
+      error:
+        type: string
+    type: object
+  routes.RateLimitExceededResponse:
+    properties:
+      error:
+        type: string
+      rate_limit_reset:
+        type: string
+    type: object
+  routes.request:
+    properties:
+      expiration:
+        type: string
+      short:
+        type: string
+      url:
+        type: string
+    type: object
+  routes.response:
+    properties:
+      expiration:
+        type: string
+      rate_limit:
+        type: integer
+      rate_limit_reset:
+        type: string
+      short:
+        type: string
+      url:
+        type: string
+    type: object
+host: localhost:3000
+info:
+  contact: {}
+  description: This is a sample URL shortener server.
+  title: GoShorty API
+  version: "1.0"
+paths:
+  /api/v1:
+    post:
+      consumes:
+      - application/json
+      description: Shorten a given URL with an optional custom short and expiration
+        time
+      parameters:
+      - description: URL Shorten Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/routes.request'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/routes.response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/routes.ErrorResponse'
+        "429":
+          description: Too Many Requests
+          schema:
+            $ref: '#/definitions/routes.RateLimitExceededResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/routes.ErrorResponse'
+      summary: Shorten a URL
+      tags:
+      - URL
+swagger: "2.0"
