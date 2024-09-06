@@ -147,5 +147,5 @@ func populateResponse(ctx *fiber.Ctx, resp *response, r *redis.Client) {
 	ttl, _ := r.TTL(database.Ctx, ctx.IP()).Result()
 	resp.RateLimitReset = ttl * time.Minute
 
-	resp.CustomShort = os.Getenv("BASE_URL") + "/" + resp.CustomShort
+	resp.CustomShort = os.Getenv("DOMAIN") + "/" + resp.CustomShort
 }

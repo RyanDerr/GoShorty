@@ -29,5 +29,5 @@ func main() {
 	app.Use(logger.New())
 
 	//Start the server on port and log any errors
-	log.Fatal(app.Listen(os.Getenv("PORT")))
+	log.Fatal(app.Listen(os.Getenv("APP_PORT")))
 }

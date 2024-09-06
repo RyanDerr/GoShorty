@@ -1,0 +1,15 @@
+services:
+  api: 
+    build: api
+    container_name: api
+    ports:
+      - "3000:3000"
+    depends_on:
+      - db
+  db: 
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+    container_name: db
+    volumes:
+      - ./data:/data
