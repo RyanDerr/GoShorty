@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"log"
 	"os"
 	"ryan-golang-url-shortener/database"
 	"ryan-golang-url-shortener/helpers"
@@ -28,9 +29,11 @@ type response struct {
 }
 
 func ShortenURL(c *fiber.Ctx) error {
+	log.Printf("Received request to shorten URL from %v\n", c.IP())
 	body := new(request)
 
 	if err := c.BodyParser(&body); err != nil {
+		log.Printf("Error parsing request body: %v\n", err)
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid request body"})
 	}
 
@@ -39,16 +42,19 @@ func ShortenURL(c *fiber.Ctx) error {
 	defer r2.Close()
 
 	if err := handleRateLimiting(c, r2); err != nil {
+		log.Printf("Rate limiting error: %v", err)
 		return err
 	}
 
 	if err := validateURL(body.URL); err != nil {
+		log.Printf("Invalid URL: %v", err)
 		return err
 	}
 
 	body.URL = helpers.EnforceHTTPS(body.URL)
 
 	id := generateID(body.CustomShort)
+	log.Printf("Generated ID: %s", id)
 
 	r := database.CreateClient(0)
 	defer r.Close()
@@ -62,6 +68,7 @@ func ShortenURL(c *fiber.Ctx) error {
 	}
 
 	if err := saveURL(r, id, body.URL, body.Expiration); err != nil {
+		log.Printf("URL already in use: %v", err)
 		return err
 	}
 
@@ -77,6 +84,7 @@ func ShortenURL(c *fiber.Ctx) error {
 	r2.Decr(database.Ctx, c.IP())
 
 	populateResponse(c, &resp, r2)
+	log.Printf("Generated url %v for origin %v", resp.CustomShort, resp.URL)
 
 	return c.Status(fiber.StatusCreated).JSON(resp)
 }
