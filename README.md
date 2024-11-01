@@ -1,5 +1,5 @@
 # GoShorty
-Sample URL Shortener Application To Learn Go
+URL Shortener Application
 
 ## Example Commands
 These commands utilize the `shorten.sh` and `resolve.sh` scripts to interact with the URL shortener service.
@@ -17,4 +17,3 @@ To resolve a shortened URL, you can use the following command:
 ./scripts/resolve.sh --short exmpl
 ```
 This will resolve the shortened URL `exmpl` and return the original URL.
-

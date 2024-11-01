@@ -4,7 +4,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/RyanDerr/GoShorty/api/helpers"
+	"github.com/RyanDerr/GoShorty/api/config"
 	"github.com/RyanDerr/GoShorty/api/routes"
 	"github.com/gin-gonic/gin"
 )
@@ -22,7 +22,7 @@ func routeSetup(app *gin.Engine) {
 // @BasePath /
 func main() {
 	log.Println("Starting server")
-	err := helpers.LoadConfig()
+	err := config.LoadConfig()
 	if err != nil {
 		log.Fatal("Error loading config")
 	}

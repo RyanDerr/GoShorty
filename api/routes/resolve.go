@@ -5,33 +5,40 @@ import (
 	"net/http"
 
 	"github.com/RyanDerr/GoShorty/api/database"
+	"github.com/RyanDerr/GoShorty/api/repositories"
+	"github.com/RyanDerr/GoShorty/api/services"
 	"github.com/gin-gonic/gin"
-	"github.com/redis/go-redis/v9"
 )
 
+// ResolveURL godoc
+// @Summary Resolve a shortened URL
+// @Description Resolve a shortened URL to its original URL
+// @Tags URL
+// @Produce json
+// @Param url path string true "Shortened URL"
+// @Success 301 {string} string "Moved Permanently"
+// @Failure 404 {object} ErrorResponse "URL not found"
+// @Failure 500 {object} ErrorResponse "Internal Server Error"
+// @Router /{url} [get]
 func ResolveURL(ctx *gin.Context) {
 	short := ctx.Param("url")
-	r := database.CreateClient(0)
-	defer r.Close()
+	client := database.CreateRedisClient(0)
+	defer client.Close()
+	repo := repositories.NewURLRepository(client)
+	service := services.NewURLService(ctx, repo)
 
-	log.Printf("Attempting to retrieve entry for %v", short)
-	res, err := r.Get(ctx, short).Result()
-
-	if err == redis.Nil {
-		log.Printf("URL short not found for short %v \n", short)
-		ctx.IndentedJSON(http.StatusNotFound, gin.H{"error": "URL not found"})
-		return
-	} else if err != nil {
-		log.Printf("Error retrieving URL from Redis: %v \n", err)
-		ctx.IndentedJSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error"})
+	url, err := service.ResolveURL(short)
+	if err != nil {
+		if err.Error() == "URL not found" {
+			log.Printf("URL short not found for short %v \n", short)
+			ctx.IndentedJSON(http.StatusNotFound, ErrorResponse{Error: "URL not found"})
+		} else {
+			log.Printf("Error retrieving URL from Redis: %v \n", err)
+			ctx.IndentedJSON(http.StatusInternalServerError, ErrorResponse{Error: "Internal Server Error"})
+		}
 		return
 	}
 
-	rInf := database.CreateClient(1)
-	defer rInf.Close()
-
-	_ = rInf.Incr(ctx, ctx.ClientIP())
-
-	log.Println("Redirecting to:", res)
-	ctx.Redirect(http.StatusMovedPermanently, res)
+	log.Println("Redirecting to:", url)
+	ctx.Redirect(http.StatusMovedPermanently, url)
 }
