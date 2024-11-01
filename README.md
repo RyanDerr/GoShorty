@@ -7,7 +7,7 @@ These commands utilize the `shorten.sh` and `resolve.sh` scripts to interact wit
 ### Shorten URL
 To shorten a URL, you can use the following command:
 ```sh
-./scripts/shorten.sh --url "http://example.com" --short "exmpl" --exp "1h
+./scripts/shorten.sh --url "http://example.com" --short "exmpl" --exp "1h"
 ```
 This will shorten the URL `http://example.com` with the custom short `exmpl` and an expiration time of 1 hour
 
