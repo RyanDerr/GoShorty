@@ -1,0 +1,113 @@
+name: 'Terraform'
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+    - 'terraform/**'
+  workflow_dispatch:
+    inputs:
+      destroy:
+        description: 'Create a destroy plan?'
+        type: choice
+        options:
+        - 'true'
+        - 'false'
+        default: 'false'
+      terraform_working_dir:
+        type: choice
+        description: 'Terraform environment'
+        options:
+        - dev
+        - test
+        - prod
+        default: 'dev'
+
+permissions:
+  id-token: write
+  contents: read
+  pull-requests: write
+
+env:
+  TERRAFORM_VERSION: "1.9.8"
+  TERRAFORM_DIR: "./terraform/live/${{ github.event.inputs.terraform_working_dir || 'dev' }}"
+  AWS_REGION: ${{ secrets.AWS_REGION }}
+
+jobs:
+  terraform_plan:
+    name: 'Terraform Plan'
+    runs-on: ubuntu-latest
+    env:
+      TF_VAR_account_id: ${{ secrets.TF_VAR_account_id }}
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4.0.0
+
+    - name: Configure AWS Plan Credentials
+      uses: aws-actions/configure-aws-credentials@v4.0.2
+      with:
+        role-to-assume: ${{ secrets.AWS_READ_TF_STATE_ARN }}
+        aws-region: ${{ secrets.AWS_REGION }}
+        role-session-name: Github-OICD-Terraform-Plan
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3.0.0
+      with:
+        terraform_version: ${{ env.TERRAFORM_VERSION }}
+
+    - name: Terraform Init
+      run: terraform init -backend-config="bucket=${{ secrets.AWS_BUCKET_NAME }}" -backend-config="dynamodb_table=${{ secrets.AWS_DYNAMODB_TABLE }}"
+      working-directory: ${{ env.TERRAFORM_DIR }}
+
+    - name: Terraform Plan
+      run: |
+        if [ "${{ github.event.inputs.destroy || 'false' }}" = "true" ]; then
+          terraform plan -destroy -out=tf-plan.out
+        else
+          terraform plan -out=tf-plan.out
+        fi
+      working-directory: ${{ env.TERRAFORM_DIR }}
+
+    - name: Upload plan
+      uses: actions/upload-artifact@v4.3.1
+      with:
+        name: tf-plan.out
+        path: ${{ env.TERRAFORM_DIR }}/tf-plan.out
+
+  terraform_apply:
+    name: 'Terraform Apply Plan'
+    needs: terraform_plan
+    runs-on: ubuntu-latest
+    environment:
+      name: 'AWS-DEV'
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4.0.0
+
+    - name: Configure AWS Apply Credentials
+      uses: aws-actions/configure-aws-credentials@v4.0.2
+      with:
+        role-to-assume: ${{ secrets.AWS_TF_APPLY_ARN }}
+        aws-region: ${{ secrets.AWS_REGION }}
+        role-session-name: Github-OICD-Terraform-Apply
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3.0.0
+      with:
+        terraform_version: ${{ env.TERRAFORM_VERSION }}
+
+    - name: Download plan
+      uses: actions/download-artifact@v4.1.4
+      with:
+        name: tf-plan.out
+        path: ${{ env.TERRAFORM_DIR }}
+
+    - name: Terraform Init
+      run: terraform init -backend-config="bucket=${{ secrets.AWS_BUCKET_NAME }}" -backend-config="dynamodb_table=${{ secrets.AWS_DYNAMODB_TABLE }}"
+      working-directory: ${{ env.TERRAFORM_DIR }}
+
+    - name: Terraform Apply
+      run: terraform apply -auto-approve tf-plan.out
+      working-directory: ${{ env.TERRAFORM_DIR }}
