@@ -17,7 +17,7 @@ func routeSetup(app *gin.Engine) {
 
 // @title GoShorty API
 // @version 1.0
-// @description This is a sample URL shortener server.
+// @description URL shortener server.
 // @host localhost:3000
 // @BasePath /
 func main() {
