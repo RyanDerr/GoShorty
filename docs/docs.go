@@ -35,7 +35,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/routes.request"
+                            "$ref": "#/definitions/models.ShortenRequest"
                         }
                     }
                 ],
@@ -43,7 +43,7 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/routes.response"
+                            "$ref": "#/definitions/models.ShortenResponse"
                         }
                     },
                     "400": {
@@ -66,9 +66,78 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/{url}": {
+            "get": {
+                "description": "Resolve a shortened URL to its original URL",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "URL"
+                ],
+                "summary": "Resolve a shortened URL",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Shortened URL",
+                        "name": "url",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "301": {
+                        "description": "Moved Permanently",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "URL not found",
+                        "schema": {
+                            "$ref": "#/definitions/routes.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/routes.ErrorResponse"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
+        "models.ShortenRequest": {
+            "type": "object",
+            "properties": {
+                "expiration": {
+                    "type": "string"
+                },
+                "short": {
+                    "type": "string"
+                },
+                "url": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.ShortenResponse": {
+            "type": "object",
+            "properties": {
+                "expiration": {
+                    "type": "string"
+                },
+                "short": {
+                    "type": "string"
+                },
+                "url": {
+                    "type": "string"
+                }
+            }
+        },
         "routes.ErrorResponse": {
             "type": "object",
             "properties": {
@@ -84,40 +153,6 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "rate_limit_reset": {
-                    "type": "string"
-                }
-            }
-        },
-        "routes.request": {
-            "type": "object",
-            "properties": {
-                "expiration": {
-                    "type": "string"
-                },
-                "short": {
-                    "type": "string"
-                },
-                "url": {
-                    "type": "string"
-                }
-            }
-        },
-        "routes.response": {
-            "type": "object",
-            "properties": {
-                "expiration": {
-                    "type": "string"
-                },
-                "rate_limit": {
-                    "type": "integer"
-                },
-                "rate_limit_reset": {
-                    "type": "string"
-                },
-                "short": {
-                    "type": "string"
-                },
-                "url": {
                     "type": "string"
                 }
             }

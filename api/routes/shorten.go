@@ -17,8 +17,8 @@ import (
 // @Tags URL
 // @Accept json
 // @Produce json
-// @Param request body request true "URL Shorten Request"
-// @Success 201 {object} response
+// @Param request body models.ShortenRequest true "URL Shorten Request"
+// @Success 201 {object} models.ShortenResponse
 // @Failure 400 {object} ErrorResponse
 // @Failure 429 {object} RateLimitExceededResponse
 // @Failure 500 {object} ErrorResponse

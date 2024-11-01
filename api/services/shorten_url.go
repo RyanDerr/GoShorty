@@ -5,8 +5,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/RyanDerr/GoShorty/api/helpers"
 	models "github.com/RyanDerr/GoShorty/api/modules"
+	"github.com/RyanDerr/GoShorty/api/urlparser"
 	"github.com/asaskevich/govalidator"
 	"github.com/google/uuid"
 )
@@ -16,7 +16,7 @@ func (s *URLService) ShortenURL(req *models.ShortenRequest) (*models.ShortenResp
 		return nil, err
 	}
 
-	req.URL = helpers.EnforceHTTPS(req.URL)
+	req.URL = urlparser.EnforceHTTPS(req.URL)
 	id := generateID(req.CustomShort)
 
 	if err := s.repo.CheckURLInUse(s.ctx, id); err != nil {
@@ -40,7 +40,7 @@ func validateURL(url string) error {
 		return fmt.Errorf("invalid url")
 	}
 
-	if !helpers.RemoveDomainError(url) {
+	if !urlparser.RemoveDomainError(url) {
 		return fmt.Errorf("url is already shortened")
 	}
 

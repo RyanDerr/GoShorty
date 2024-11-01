@@ -1,5 +1,23 @@
 basePath: /
 definitions:
+  models.ShortenRequest:
+    properties:
+      expiration:
+        type: string
+      short:
+        type: string
+      url:
+        type: string
+    type: object
+  models.ShortenResponse:
+    properties:
+      expiration:
+        type: string
+      short:
+        type: string
+      url:
+        type: string
+    type: object
   routes.ErrorResponse:
     properties:
       error:
@@ -12,28 +30,6 @@ definitions:
       rate_limit_reset:
         type: string
     type: object
-  routes.request:
-    properties:
-      expiration:
-        type: string
-      short:
-        type: string
-      url:
-        type: string
-    type: object
-  routes.response:
-    properties:
-      expiration:
-        type: string
-      rate_limit:
-        type: integer
-      rate_limit_reset:
-        type: string
-      short:
-        type: string
-      url:
-        type: string
-    type: object
 host: localhost:3000
 info:
   contact: {}
@@ -41,6 +37,33 @@ info:
   title: GoShorty API
   version: "1.0"
 paths:
+  /{url}:
+    get:
+      description: Resolve a shortened URL to its original URL
+      parameters:
+      - description: Shortened URL
+        in: path
+        name: url
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "301":
+          description: Moved Permanently
+          schema:
+            type: string
+        "404":
+          description: URL not found
+          schema:
+            $ref: '#/definitions/routes.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/routes.ErrorResponse'
+      summary: Resolve a shortened URL
+      tags:
+      - URL
   /api/v1:
     post:
       consumes:
@@ -53,14 +76,14 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/routes.request'
+          $ref: '#/definitions/models.ShortenRequest'
       produces:
       - application/json
       responses:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/routes.response'
+            $ref: '#/definitions/models.ShortenResponse'
         "400":
           description: Bad Request
           schema:

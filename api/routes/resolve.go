@@ -10,6 +10,16 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// ResolveURL godoc
+// @Summary Resolve a shortened URL
+// @Description Resolve a shortened URL to its original URL
+// @Tags URL
+// @Produce json
+// @Param url path string true "Shortened URL"
+// @Success 301 {string} string "Moved Permanently"
+// @Failure 404 {object} ErrorResponse "URL not found"
+// @Failure 500 {object} ErrorResponse "Internal Server Error"
+// @Router /{url} [get]
 func ResolveURL(ctx *gin.Context) {
 	short := ctx.Param("url")
 	client := database.CreateRedisClient(0)
