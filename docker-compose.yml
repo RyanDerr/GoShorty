@@ -7,6 +7,11 @@ services:
     container_name: api
     environment:
       APP_ENV: "local"
+      DB_ADDRESS: "db:6379"
+      DB_PASSWORD: ""
+      APP_PORT: ":3000"
+      DOMAIN: "localhost:3000"
+      API_QUOTA: 10
     ports:
       - "3000:3000"
     depends_on:
