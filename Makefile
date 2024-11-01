@@ -9,4 +9,4 @@ clean-db:
 	docker exec -it db redis-cli FLUSHALL
 
 generate-spec:
-	swag init -g api/main.go
+	swag init -g api/main.go -o ./api/docs
