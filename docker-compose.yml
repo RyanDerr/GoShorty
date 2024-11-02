@@ -2,7 +2,6 @@ services:
   api: 
     build: 
       context: .
-      dockerfile: Dockerfile
     image: goshorty-api:local
     container_name: api
     environment:

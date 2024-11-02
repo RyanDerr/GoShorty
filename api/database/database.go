@@ -15,8 +15,9 @@ func CreateRedisClient(dbNo int) *redis.Client {
 			Password: os.Getenv("DB_PASSWORD"),
 			DB:       dbNo,
 		})
-	} else{
-		
+	} else {
+		// TODO: Implement Elasticache connection
+		rdb = nil
 	}
 
 	return rdb

@@ -1,0 +1,42 @@
+name: Build and Push Docker Image
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    environment:
+      name: 'AWS'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4.0.2
+        with:
+          role-to-assume: ${{ secrets.APPLY_ARN }}
+          aws-region: ${{ secrets.AWS_REGION }}
+          role-session-name: Push-To-ECR
+
+      - name: Set up timestamp
+        id: vars
+        run: echo "TIMESTAMP=$(date +'%Y%m%d%H%M')" >> $GITHUB_ENV
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6.4
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ secrets.ACR_LOGIN_SERVER }}/goshorty:latest
+            ${{ secrets.ACR_LOGIN_SERVER }}/goshorty:${{ env.TIMESTAMP }}
+
+      - name: Logout from ECR
+        run: docker logout ${{ secrets.ACR_LOGIN_SERVER }}
