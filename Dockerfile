@@ -25,9 +25,6 @@ RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 # Copy the pre-built binary from the builder stage
 COPY --from=builder /go-shorty /go-shorty
 
-# Copy the .env file
-COPY ./api/.env /app/.env
-
 # Set permissions for the non-root user
 RUN chown -R appuser:appgroup /app
 
