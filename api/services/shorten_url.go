@@ -5,7 +5,7 @@ import (
 	"os"
 	"time"
 
-	models "github.com/RyanDerr/GoShorty/api/modules"
+	"github.com/RyanDerr/GoShorty/api/models"
 	"github.com/RyanDerr/GoShorty/api/urlparser"
 	"github.com/asaskevich/govalidator"
 	"github.com/google/uuid"
