@@ -6,7 +6,7 @@ services:
     container_name: api
     environment:
       APP_ENV: "local"
-      DB_ADDRESS: "db:6379"
+      REDIS_ADDRESS: "redis:6379"
       DB_PASSWORD: ""
       APP_PORT: ":3000"
       DOMAIN: "localhost:3000"
@@ -14,9 +14,9 @@ services:
     ports:
       - "3000:3000"
     depends_on:
-      - db
-  db: 
+      - redis
+  redis: 
     image: redis:alpine
     ports:
       - "6379:6379"
-    container_name: db
+    container_name: redis
