@@ -22,11 +22,11 @@ FROM alpine:latest
 # Create a non-root user and group
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 
+# Create the /app directory
+RUN mkdir /app
+
 # Copy the pre-built binary from the builder stage
 COPY --from=builder /go-shorty /go-shorty
-
-# Copy the .env file
-COPY ./api/.env /app/.env
 
 # Set permissions for the non-root user
 RUN chown -R appuser:appgroup /app

@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/RyanDerr/GoShorty/api/database"
-	models "github.com/RyanDerr/GoShorty/api/modules"
+	"github.com/RyanDerr/GoShorty/api/models"
 	"github.com/RyanDerr/GoShorty/api/repositories"
 	"github.com/RyanDerr/GoShorty/api/services"
 	"github.com/gin-gonic/gin"

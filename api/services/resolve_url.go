@@ -14,6 +14,10 @@ func (s *URLService) ResolveURL(short string) (string, error) {
 		return "", err
 	}
 
-	_ = s.repo.IncrementVisitCount(s.ctx, s.ctx.ClientIP())
+	err = s.repo.IncrementVisitCount(s.ctx, s.ctx.ClientIP())
+	if err != nil {
+		return "", err
+	}
+
 	return url, nil
 }
