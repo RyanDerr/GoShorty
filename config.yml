@@ -1,0 +1,3 @@
+awsSecrets:
+  - REDIS_ADDRESS
+awsRegion: us-east-1

@@ -7,18 +7,23 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/secretsmanager"
+	"gopkg.in/yaml.v3"
 )
 
 const (
-	local = "local"
+	local      = "local"
+	configFile = "../config.yml"
 )
 
 var (
-	isLocal bool = false
-	// TODO: Should this be read in from a yml file?
-	awsSecrets = []string{"REDIS_ADDRESS"}
-	awsRegion  = "us-east-1"
+	isLocal   bool = false
+	awsConfig *Config
 )
+
+type Config struct {
+	AwsSecrets []string `yaml:"awsSecrets"`
+	AwsRegion  string   `yaml:"awsRegion"`
+}
 
 // LoadConfig loads the environment configuration based on the application environment.
 func LoadConfig() error {
@@ -28,12 +33,12 @@ func LoadConfig() error {
 		isLocal = true
 	} else {
 		log.Println("Running application in AWS configuration")
-
-		if os.Getenv("AWS_REGION") != "" {
-			awsRegion = os.Getenv("AWS_REGION")
+		err := loadYamlConfig(configFile)
+		if err != nil {
+			return err
 		}
 
-		config, err := config.LoadDefaultConfig(context.TODO(), config.WithRegion(awsRegion))
+		config, err := config.LoadDefaultConfig(context.TODO(), config.WithRegion(awsConfig.AwsRegion))
 
 		if err != nil {
 			return err
@@ -41,7 +46,7 @@ func LoadConfig() error {
 
 		svc := secretsmanager.NewFromConfig(config)
 
-		for _, secret := range awsSecrets {
+		for _, secret := range awsConfig.AwsSecrets {
 			input := &secretsmanager.GetSecretValueInput{
 				SecretId: &secret,
 			}
@@ -56,10 +61,24 @@ func LoadConfig() error {
 	return nil
 }
 
+func loadYamlConfig(filename string) error {
+	data, err := os.ReadFile(filename)
+	if err != nil {
+		return err
+	}
+
+	err = yaml.Unmarshal(data, awsConfig)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func IsLocal() bool {
 	return isLocal
 }
 
 func GetRegion() string {
-	return awsRegion
+	return awsConfig.AwsRegion
 }
