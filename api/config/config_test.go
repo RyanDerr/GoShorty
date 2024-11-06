@@ -7,23 +7,20 @@ import (
 )
 
 func TestLoadConfig(t *testing.T) {
-    t.Run("should load local environment variables", func(t *testing.T) {
-        resetState()
-        t.Setenv("APP_ENV", "local")
+	t.Run("should load local environment variables", func(t *testing.T) {
+		resetState()
+		t.Setenv("APP_ENV", local)
+		LoadConfig()
 
-        err := LoadConfig()
-        assert.NoError(t, err)
-        assert.True(t, IsLocal())
-    })
+		assert.True(t, IsLocal())
+	})
 
-    t.Run("should not load local environment variables if env is not local", func(t *testing.T) {
-        resetState()
-        t.Setenv("APP_ENV", "production")
-
-        err := LoadConfig()
-        assert.NoError(t, err)
-        assert.False(t, IsLocal())
-    })
+	t.Run("should not load local environment variables", func(t *testing.T) {
+		resetState()
+		t.Setenv("APP_ENV", "dev")
+		LoadConfig()
+		assert.False(t, IsLocal())
+	})
 }
 
 func resetState() {

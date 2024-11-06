@@ -18,6 +18,6 @@ if [ -z "$SHORT" ]; then
   exit 1
 fi
 
-API_URL="http://localhost:3000/$SHORT"
+API_URL="http://localhost:8080/$SHORT"
 
 curl $API_URL

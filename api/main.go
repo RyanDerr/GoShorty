@@ -2,11 +2,14 @@ package main
 
 import (
 	"log"
-	"os"
 
 	"github.com/RyanDerr/GoShorty/api/config"
 	"github.com/RyanDerr/GoShorty/api/routes"
 	"github.com/gin-gonic/gin"
+)
+
+const (
+	port = ":8080"
 )
 
 func routeSetup(app *gin.Engine) {
@@ -22,10 +25,7 @@ func routeSetup(app *gin.Engine) {
 // @BasePath /
 func main() {
 	log.Println("Starting server")
-	err := config.LoadConfig()
-	if err != nil {
-		log.Fatal("Error loading config")
-	}
+	config.LoadConfig()
 	log.Println("Creating new gin app")
 	router := gin.Default()
 	routeSetup(router)
@@ -34,5 +34,5 @@ func main() {
 	router.Use(gin.Logger())
 
 	//Start the server on port and log any errors
-	log.Fatal(router.Run(os.Getenv("APP_PORT")))
+	log.Fatal(router.Run(port))
 }

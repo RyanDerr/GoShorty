@@ -22,7 +22,7 @@ if [ -z "$URL" ]; then
   exit 1
 fi
 
-API_URL="http://localhost:3000/api/v1"
+API_URL="http://localhost:8080/api/v1"
 DATA="{\"url\": \"$URL\""
 
 if [ -n "$SHORT" ]; then

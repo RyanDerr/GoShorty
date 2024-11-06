@@ -5,10 +5,17 @@ on:
     branches:
       - main
 
+permissions:
+  id-token: write
+  contents: read
+  pull-requests: write
+
 jobs:
-  test-and-build:
-    name: Test and Build Docker Image
+  test-build-push:
+    name: Test, Build, And Upload Docker Image
     runs-on: ubuntu-latest
+    environment: 
+      name: 'DEV' 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -23,26 +30,6 @@ jobs:
 
       - name: Run tests
         run: go test -v ./...
-      
-      - name: Build Docker image
-        run: |
-          docker build -t goshorty:latest .
-          TIMESTAMP=$(date +%Y%m%d%H%M%S)
-          docker tag goshorty:latest goshorty:$TIMESTAMP
-          echo "TIMESTAMP=$TIMESTAMP" >> $GITHUB_ENV
-
-  push-to-ecr:
-    name: Push Docker image to ECR
-    runs-on: ubuntu-latest
-    environment:
-      name: 'DEV'
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4.0.2
@@ -54,12 +41,18 @@ jobs:
       - name: Login to Amazon ECR
         uses: aws-actions/amazon-ecr-login@v2.0.1
 
-      - name: Build and push Docker image
+      - name: Set TIMESTAMP
+        run: echo "TIMESTAMP=$(date +'%Y%m%d%H%M')" >> $GITHUB_ENV
+
+      - name: Build Image
+        run: docker build -t goshorty:latest .
+
+      - name: Tag And Push Docker Image
         run: |
-          docker tag goshorty:latest ${{ secrets.ECR_LOGIN_SERVER }}/goshorty:latest
-          docker tag goshorty:${{ env.TIMESTAMP }} ${{ secrets.ECR_LOGIN_SERVER }}/goshorty:${{ env.TIMESTAMP }}
-          docker push ${{ secrets.ECR_LOGIN_SERVER }}/goshorty:latest
-          docker push ${{ secrets.ECR_LOGIN_SERVER }}/goshorty:${{ env.TIMESTAMP }}
+          docker tag goshorty:latest ${{ secrets.ECR_LOGIN_SERVER }}:latest
+          docker tag goshorty:latest ${{ secrets.ECR_LOGIN_SERVER }}:${{ env.TIMESTAMP }}
+          docker push ${{ secrets.ECR_LOGIN_SERVER }}:latest
+          docker push ${{ secrets.ECR_LOGIN_SERVER }}:${{ env.TIMESTAMP }}
 
       - name: Logout from ECR
         run: docker logout ${{ secrets.ECR_LOGIN_SERVER }}
