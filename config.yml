@@ -1,4 +1,3 @@
 awsSecrets:
-  - REDIS_ADDRESS
-  - REDIS_PASSWORD
+  - GoShortyDevRedis
 awsRegion: us-east-1

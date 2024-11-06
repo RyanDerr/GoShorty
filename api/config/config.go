@@ -2,6 +2,7 @@ package config
 
 import (
 	"context"
+	"encoding/json"
 	"log"
 	"os"
 
@@ -45,17 +46,34 @@ func LoadConfig() error {
 		}
 
 		svc := secretsmanager.NewFromConfig(config)
+		err = loadSecrets(svc)
+		if err != nil {
+			return err
+		}
 
-		for _, secret := range awsConfig.AwsSecrets {
-			input := &secretsmanager.GetSecretValueInput{
-				SecretId: &secret,
-			}
+	}
+	return nil
+}
 
-			res, err := svc.GetSecretValue(context.TODO(), input)
-			if err != nil {
-				return err
-			}
-			os.Setenv(secret, *res.SecretString)
+func loadSecrets(svc *secretsmanager.Client) error {
+	for _, secret := range awsConfig.AwsSecrets {
+		input := &secretsmanager.GetSecretValueInput{
+			SecretId: &secret,
+		}
+
+		res, err := svc.GetSecretValue(context.TODO(), input)
+		if err != nil {
+			return err
+		}
+
+		var secretMap map[string]string
+		err = json.Unmarshal([]byte(*res.SecretString), &secretMap)
+		if err != nil {
+			return err
+		}
+
+		for key, value := range secretMap {
+			os.Setenv(key, value)
 		}
 	}
 	return nil
