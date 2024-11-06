@@ -6,6 +6,11 @@ on:
       - main
   workflow_dispatch:
 
+permissions:
+  id-token: write
+  contents: read
+  pull-requests: write
+
 jobs:
   test-and-build:
     name: Test and Build Docker Image
@@ -35,6 +40,7 @@ jobs:
   push-to-ecr:
     name: Push Docker image to ECR
     runs-on: ubuntu-latest
+    needs: build-and-test
     environment:
       name: 'DEV'
 
@@ -55,7 +61,7 @@ jobs:
       - name: Login to Amazon ECR
         uses: aws-actions/amazon-ecr-login@v2.0.1
 
-      - name: Build and push Docker image
+      - name: Tag and push Docker image
         run: |
           docker tag goshorty:latest ${{ secrets.ECR_LOGIN_SERVER }}/goshorty:latest
           docker tag goshorty:${{ env.TIMESTAMP }} ${{ secrets.ECR_LOGIN_SERVER }}/goshorty:${{ env.TIMESTAMP }}
