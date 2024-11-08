@@ -5,13 +5,13 @@ import (
 	"os"
 	"time"
 
-	"github.com/RyanDerr/GoShorty/api/models"
+	module "github.com/RyanDerr/GoShorty/api/modules/shorten"
 	"github.com/RyanDerr/GoShorty/api/urlparser"
 	"github.com/asaskevich/govalidator"
 	"github.com/google/uuid"
 )
 
-func (s *URLService) ShortenURL(req *models.ShortenRequest) (*models.ShortenResponse, error) {
+func (s *URLService) ShortenURL(req *module.ShortenRequest) (*module.ShortenResponse, error) {
 	if err := validateURL(req.URL); err != nil {
 		return nil, err
 	}
@@ -61,8 +61,8 @@ func parseExpiration(expiration string) (time.Duration, error) {
 	return time.ParseDuration(expiration)
 }
 
-func populateResponse(req *models.ShortenRequest, id string, exp time.Duration) *models.ShortenResponse {
-	return &models.ShortenResponse{
+func populateResponse(req *module.ShortenRequest, id string, exp time.Duration) *module.ShortenResponse {
+	return &module.ShortenResponse{
 		URL:         req.URL,
 		CustomShort: os.Getenv("DOMAIN") + "/" + id,
 		Expiration:  exp.String(),

@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/RyanDerr/GoShorty/api/database"
-	"github.com/RyanDerr/GoShorty/api/models"
+	module "github.com/RyanDerr/GoShorty/api/modules/shorten"
 	"github.com/RyanDerr/GoShorty/api/repositories"
 	"github.com/RyanDerr/GoShorty/api/services"
 	"github.com/gin-gonic/gin"
@@ -25,7 +25,7 @@ import (
 // @Router /api/v1 [post]
 func ShortenURL(ctx *gin.Context) {
 	log.Printf("Received request to shorten URL from %v\n", ctx.ClientIP())
-	body := new(models.ShortenRequest)
+	body := new(module.ShortenRequest)
 	if err := ctx.ShouldBindJSON(&body); err != nil {
 		log.Printf("Error parsing request body: %v\n", err)
 		ctx.IndentedJSON(http.StatusBadRequest, ErrorResponse{Error: "Invalid request body"})

@@ -10,3 +10,6 @@ clean-db:
 
 generate-spec:
 	swag init -g api/main.go -o ./api/docs
+
+generate-cli:
+	go build -o goshorty cmd/main.go
