@@ -1,26 +1,27 @@
 package cache
 
 import (
+	"context"
 	"log"
 	"os"
 
-	"github.com/gin-gonic/gin"
 	"github.com/redis/go-redis/v9"
 )
 
 const (
 	redisAddr = "REDIS_ADDRESS"
-	redisPass = "REDIS_PASSWORD"
 )
 
-func CreateRedisClient(ctx *gin.Context, dbNo int) (*redis.Client, error) {
+func CreateRedisClient(dbNo int) (*redis.Client, error) {
+	ctx := context.Background()
+
 	client := redis.NewClient(&redis.Options{
 		Addr: os.Getenv(redisAddr),
 		DB:   dbNo,
 	})
 
 	if err := client.Ping(ctx).Err(); err != nil {
-		log.Fatalf("Error connecting to Redis: %v", err)
+		log.Printf("Error pinging Redis: %v", err)
 		return nil, err
 	}
 

@@ -55,6 +55,16 @@ func ResponseCreated(ctx *gin.Context, message string) {
 	ctx.IndentedJSON(http.StatusCreated, response)
 }
 
+func ResponseCreatedWithData(ctx *gin.Context, data any) {
+	response := ResponseOKWithDataModel{
+		Code:    1000,
+		Data:    data,
+		Message: "OK",
+	}
+
+	ctx.IndentedJSON(http.StatusCreated, response)
+}
+
 func ResponseError(c *gin.Context, err string, code int) {
 	response := ResponseErrorModel{
 		Code:    99,
@@ -74,5 +84,5 @@ func ResponseCustomError(c *gin.Context, err any, code int) {
 }
 
 func ResponseRedirect(c *gin.Context, url string) {
-	c.IndentedJSON(http.StatusMovedPermanently, url)
+	c.Redirect(http.StatusMovedPermanently, url)
 }

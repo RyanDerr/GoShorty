@@ -1,14 +1,17 @@
 package shortenflgs
 
 import (
+	"fmt"
+
+	api "github.com/RyanDerr/GoShorty/api/routes"
 	"github.com/RyanDerr/GoShorty/internal/cmd/flags/commonflgs"
 	"github.com/urfave/cli/v2"
 )
 
 const (
-	URLFlag  = "url"
+	URLFlag   = "url"
 	ShortFlag = "short"
-	TtlFlag = "ttl"
+	TtlFlag   = "ttl"
 )
 
 var shortenFlags = []cli.Flag{
@@ -35,4 +38,12 @@ var shortenFlags = []cli.Flag{
 func GetShortenFlags() []cli.Flag {
 	shortenFlags = append(shortenFlags, commonflgs.GetCommonFlags()...)
 	return shortenFlags
+}
+
+func GetShortenServiceUrl(c *cli.Context) (string, error) {
+	serviceURL := c.String(commonflgs.ServiceUrlFlag)
+	if serviceURL == "" {
+		return "", fmt.Errorf("service URL not provided for the GoShorty service")
+	}
+	return fmt.Sprintf("%s%s", serviceURL, api.GetShortenRoute()), nil
 }

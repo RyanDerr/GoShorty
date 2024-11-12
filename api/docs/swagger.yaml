@@ -1,102 +1,104 @@
-basePath: /
+basePath: /api/v1
 definitions:
-  models.ShortenRequest:
+  request.ShortenUrlRequest:
     properties:
-      expiration:
+      custom_short:
         type: string
-      short:
+      expiration:
         type: string
       url:
         type: string
     type: object
-  models.ShortenResponse:
+  response.ResponseErrorModel:
     properties:
-      expiration:
+      code:
+        type: integer
+      message:
         type: string
-      short:
+    type: object
+  response.ShortenUrlResponse:
+    properties:
+      custom_short:
+        type: string
+      expiration:
         type: string
       url:
         type: string
     type: object
-  routes.ErrorResponse:
-    properties:
-      error:
-        type: string
-    type: object
-  routes.RateLimitExceededResponse:
-    properties:
-      error:
-        type: string
-      rate_limit_reset:
-        type: string
-    type: object
-host: localhost:3000
+host: localhost
 info:
   contact: {}
-  description: This is a sample URL shortener server.
+  description: This is the API for GoShorty, a URL shortening service
   title: GoShorty API
-  version: "1.0"
+  version: 0.1.0
 paths:
-  /{url}:
+  /url/{short}:
     get:
+      consumes:
+      - application/json
       description: Resolve a shortened URL to its original URL
       parameters:
-      - description: Shortened URL
+      - description: Short to resolve
         in: path
-        name: url
+        name: short
         required: true
         type: string
       produces:
       - application/json
       responses:
         "301":
-          description: Moved Permanently
+          description: Redirect to original URL
           schema:
             type: string
-        "404":
-          description: URL not found
+        "400":
+          description: Bad Request
           schema:
-            $ref: '#/definitions/routes.ErrorResponse'
+            $ref: '#/definitions/response.ResponseErrorModel'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.ResponseErrorModel'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/routes.ErrorResponse'
+            $ref: '#/definitions/response.ResponseErrorModel'
       summary: Resolve a shortened URL
       tags:
       - URL
-  /api/v1:
+  /url/shorten:
     post:
       consumes:
       - application/json
-      description: Shorten a given URL with an optional custom short and expiration
-        time
+      description: Shorten a given URL and return the shortened version
       parameters:
-      - description: URL Shorten Request
+      - description: URL to be shortened
         in: body
-        name: request
+        name: shortenUrl
         required: true
         schema:
-          $ref: '#/definitions/models.ShortenRequest'
+          $ref: '#/definitions/request.ShortenUrlRequest'
       produces:
       - application/json
       responses:
         "201":
-          description: Created
+          description: Shortened URL
           schema:
-            $ref: '#/definitions/models.ShortenResponse'
+            $ref: '#/definitions/response.ShortenUrlResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/routes.ErrorResponse'
-        "429":
-          description: Too Many Requests
+            $ref: '#/definitions/response.ResponseErrorModel'
+        "409":
+          description: Conflict
           schema:
-            $ref: '#/definitions/routes.RateLimitExceededResponse'
+            $ref: '#/definitions/response.ResponseErrorModel'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/routes.ErrorResponse'
+            $ref: '#/definitions/response.ResponseErrorModel'
       summary: Shorten a URL
       tags:
       - URL
+schemes:
+- https
 swagger: "2.0"

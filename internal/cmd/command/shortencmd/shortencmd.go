@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/RyanDerr/GoShorty/api/modules/shorten"
-	"github.com/RyanDerr/GoShorty/internal/cmd/flags/commonflgs"
 	"github.com/RyanDerr/GoShorty/internal/cmd/flags/shortenflgs"
+	"github.com/RyanDerr/GoShorty/pkg/request"
+	"github.com/RyanDerr/GoShorty/pkg/response"
 	"github.com/urfave/cli/v2"
 )
 
@@ -16,18 +16,24 @@ const (
 	ShortenCommandName = "shorten"
 )
 
+var apiResponse struct {
+	Code    int             `json:"code"`
+	Data    json.RawMessage `json:"data"`
+	Message string          `json:"message"`
+}
+
 var Command = &cli.Command{
 	Name:  ShortenCommandName,
 	Usage: "Shorten a URL",
 	Flags: shortenflgs.GetShortenFlags(),
 	Action: func(ctx *cli.Context) error {
-		serviceUrl, err := commonflgs.GetServiceURL(ctx)
+		serviceUrl, err := shortenflgs.GetShortenServiceUrl(ctx)
 		if err != nil {
 			return cli.Exit(err.Error(), 1)
 		}
 
-		ShortenCommandParams := &shorten.ShortenRequest{
-			URL:         ctx.String(shortenflgs.URLFlag),
+		ShortenCommandParams := &request.ShortenUrlRequest{
+			Url:         ctx.String(shortenflgs.URLFlag),
 			CustomShort: ctx.String(shortenflgs.ShortFlag),
 			Expiration:  ctx.String(shortenflgs.TtlFlag),
 		}
@@ -43,7 +49,7 @@ var Command = &cli.Command{
 	},
 }
 
-func shortenURL(data *shorten.ShortenRequest, serviceUrl string) (*shorten.ShortenResponse, error) {
+func shortenURL(data *request.ShortenUrlRequest, serviceUrl string) (*response.ShortenUrlResponse, error) {
 
 	jsonData, err := json.Marshal(data)
 	if err != nil {
@@ -57,12 +63,16 @@ func shortenURL(data *shorten.ShortenRequest, serviceUrl string) (*shorten.Short
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusCreated {
-		return nil, fmt.Errorf("API returned non-201 status: %v", resp.Status)
+		return nil, fmt.Errorf("API returned status: %v", resp.Status)
 	}
 
-	var response shorten.ShortenResponse
-	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
+	if err := json.NewDecoder(resp.Body).Decode(&apiResponse); err != nil {
 		return nil, fmt.Errorf("failed to decode response: %v", err)
+	}
+
+	var response response.ShortenUrlResponse
+	if err := json.Unmarshal(apiResponse.Data, &response); err != nil {
+		return nil, fmt.Errorf("failed to unmarshal data: %v", err)
 	}
 
 	return &response, nil

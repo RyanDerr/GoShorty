@@ -1,17 +1,20 @@
 {
+    "schemes": [
+        "https"
+    ],
     "swagger": "2.0",
     "info": {
-        "description": "This is a sample URL shortener server.",
+        "description": "This is the API for GoShorty, a URL shortening service",
         "title": "GoShorty API",
         "contact": {},
-        "version": "1.0"
+        "version": "0.1.0"
     },
-    "host": "localhost:3000",
-    "basePath": "/",
+    "host": "localhost",
+    "basePath": "/api/v1",
     "paths": {
-        "/api/v1": {
+        "/url/shorten": {
             "post": {
-                "description": "Shorten a given URL with an optional custom short and expiration time",
+                "description": "Shorten a given URL and return the shortened version",
                 "consumes": [
                     "application/json"
                 ],
@@ -24,46 +27,49 @@
                 "summary": "Shorten a URL",
                 "parameters": [
                     {
-                        "description": "URL Shorten Request",
-                        "name": "request",
+                        "description": "URL to be shortened",
+                        "name": "shortenUrl",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.ShortenRequest"
+                            "$ref": "#/definitions/request.ShortenUrlRequest"
                         }
                     }
                 ],
                 "responses": {
                     "201": {
-                        "description": "Created",
+                        "description": "Shortened URL",
                         "schema": {
-                            "$ref": "#/definitions/models.ShortenResponse"
+                            "$ref": "#/definitions/response.ShortenUrlResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/routes.ErrorResponse"
+                            "$ref": "#/definitions/response.ResponseErrorModel"
                         }
                     },
-                    "429": {
-                        "description": "Too Many Requests",
+                    "409": {
+                        "description": "Conflict",
                         "schema": {
-                            "$ref": "#/definitions/routes.RateLimitExceededResponse"
+                            "$ref": "#/definitions/response.ResponseErrorModel"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/routes.ErrorResponse"
+                            "$ref": "#/definitions/response.ResponseErrorModel"
                         }
                     }
                 }
             }
         },
-        "/{url}": {
+        "/url/{short}": {
             "get": {
                 "description": "Resolve a shortened URL to its original URL",
+                "consumes": [
+                    "application/json"
+                ],
                 "produces": [
                     "application/json"
                 ],
@@ -74,29 +80,35 @@
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Shortened URL",
-                        "name": "url",
+                        "description": "Short to resolve",
+                        "name": "short",
                         "in": "path",
                         "required": true
                     }
                 ],
                 "responses": {
                     "301": {
-                        "description": "Moved Permanently",
+                        "description": "Redirect to original URL",
                         "schema": {
                             "type": "string"
                         }
                     },
-                    "404": {
-                        "description": "URL not found",
+                    "400": {
+                        "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/routes.ErrorResponse"
+                            "$ref": "#/definitions/response.ResponseErrorModel"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/response.ResponseErrorModel"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/routes.ErrorResponse"
+                            "$ref": "#/definitions/response.ResponseErrorModel"
                         }
                     }
                 }
@@ -104,13 +116,13 @@
         }
     },
     "definitions": {
-        "models.ShortenRequest": {
+        "request.ShortenUrlRequest": {
             "type": "object",
             "properties": {
-                "expiration": {
+                "custom_short": {
                     "type": "string"
                 },
-                "short": {
+                "expiration": {
                     "type": "string"
                 },
                 "url": {
@@ -118,35 +130,27 @@
                 }
             }
         },
-        "models.ShortenResponse": {
+        "response.ResponseErrorModel": {
             "type": "object",
             "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "response.ShortenUrlResponse": {
+            "type": "object",
+            "properties": {
+                "custom_short": {
+                    "type": "string"
+                },
                 "expiration": {
                     "type": "string"
                 },
-                "short": {
-                    "type": "string"
-                },
                 "url": {
-                    "type": "string"
-                }
-            }
-        },
-        "routes.ErrorResponse": {
-            "type": "object",
-            "properties": {
-                "error": {
-                    "type": "string"
-                }
-            }
-        },
-        "routes.RateLimitExceededResponse": {
-            "type": "object",
-            "properties": {
-                "error": {
-                    "type": "string"
-                },
-                "rate_limit_reset": {
                     "type": "string"
                 }
             }
