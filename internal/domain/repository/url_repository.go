@@ -37,11 +37,7 @@ func (r *UrlRepository) CheckShortInUse(ctx *gin.Context, short string) (bool, e
 		return false, err
 	}
 
-	if val != "" {
-		return true, nil
-	}
-
-	return false, nil
+	return val != "", nil
 }
 
 func (r *UrlRepository) SaveUrl(ctx *gin.Context, short *entity.ShortenUrl) (*entity.ShortenUrl, error) {

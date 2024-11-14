@@ -15,7 +15,7 @@ func (r *ShortenUrlRequest) Validate() error {
 	if r.Url == "" {
 		return fmt.Errorf("url is required")
 	}
-	_, err := url.Parse(r.Url)
+	_, err := url.ParseRequestURI(r.Url)
 	if err != nil {
 		return fmt.Errorf("invalid url format")
 	}

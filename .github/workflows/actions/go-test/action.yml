@@ -1,0 +1,22 @@
+name: Go Run Tests Action 
+description: Handles Running All Go Test Files
+inputs:
+  go-version:
+    description: 'The Go version to use'
+    required: true
+    default: '>=1.23.0'
+runs: 
+  using: 'composite'
+  steps:
+    - name: Set up Go
+      uses: actions/setup-go@v5.1.0
+      with:
+        go-version: ${{ inputs.go-version }}
+
+    - name: Install dependencies
+      shell: bash
+      run: go mod download
+
+    - name: Run tests
+      shell: bash
+      run: go test -v ./...
