@@ -5,7 +5,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/RyanDerr/GoShorty/internal/domain/entity"
+	urlEntity "github.com/RyanDerr/GoShorty/internal/domain/entity/url"
 	"github.com/RyanDerr/GoShorty/internal/domain/repository"
 	"github.com/gin-gonic/gin"
 	"github.com/redis/go-redis/v9"
@@ -16,7 +16,7 @@ type ShortenUrlService struct {
 }
 
 type IUrlService interface {
-	ShortenUrl(*gin.Context, *entity.ShortenUrl) (*entity.ShortenUrl, int, error)
+	ShortenUrl(*gin.Context, *urlEntity.ShortenUrl) (*urlEntity.ShortenUrl, int, error)
 	ResolveUrl(*gin.Context, string) (string, int, error)
 }
 
@@ -26,7 +26,7 @@ func NewShortenUrlService(urlRepo repository.IUrlRepository) *ShortenUrlService 
 	}
 }
 
-func (s *ShortenUrlService) ShortenUrl(ctx *gin.Context, short *entity.ShortenUrl) (*entity.ShortenUrl, int, error) {
+func (s *ShortenUrlService) ShortenUrl(ctx *gin.Context, short *urlEntity.ShortenUrl) (*urlEntity.ShortenUrl, int, error) {
 	res, err := s.urlRepo.CheckShortInUse(ctx, short.Short)
 
 	if err != nil {

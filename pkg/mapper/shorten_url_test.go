@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/RyanDerr/GoShorty/internal/domain/entity"
+	urlEntity "github.com/RyanDerr/GoShorty/internal/domain/entity/url"
 	"github.com/RyanDerr/GoShorty/pkg/request"
 	"github.com/RyanDerr/GoShorty/pkg/response"
 	"github.com/stretchr/testify/require"
@@ -13,7 +13,7 @@ import (
 func TestMapShortenUrlRequestToEntity(t *testing.T) {
 	testCases := map[string]struct {
 		input           *request.ShortenUrlRequest
-		response        *entity.ShortenUrl
+		response        *urlEntity.ShortenUrl
 		wantErr         bool
 		wantErrContains string
 	}{
@@ -23,7 +23,7 @@ func TestMapShortenUrlRequestToEntity(t *testing.T) {
 				CustomShort: "exmpl",
 				Expiration:  "1h",
 			},
-			response: &entity.ShortenUrl{
+			response: &urlEntity.ShortenUrl{
 				BaseUrl:    "http://example.com",
 				Short:      "exmpl",
 				Expiration: time.Hour,
@@ -35,7 +35,7 @@ func TestMapShortenUrlRequestToEntity(t *testing.T) {
 				Url:        "http://example.com",
 				Expiration: "1h",
 			},
-			response: &entity.ShortenUrl{
+			response: &urlEntity.ShortenUrl{
 				BaseUrl:    "http://example.com",
 				Expiration: time.Hour,
 			},
@@ -46,7 +46,7 @@ func TestMapShortenUrlRequestToEntity(t *testing.T) {
 				Url:         "http://example.com",
 				CustomShort: "exmpl",
 			},
-			response: &entity.ShortenUrl{
+			response: &urlEntity.ShortenUrl{
 				BaseUrl:    "http://example.com",
 				Short:      "exmpl",
 				Expiration: time.Hour * 24,
@@ -86,11 +86,11 @@ func TestMapShortenUrlRequestToEntity(t *testing.T) {
 
 func TestMapShortenUrlEntityToResponse(t *testing.T) {
 	testCases := map[string]struct {
-		input    *entity.ShortenUrl
+		input    *urlEntity.ShortenUrl
 		expected *response.ShortenUrlResponse
 	}{
 		"valid_entity": {
-			input: &entity.ShortenUrl{
+			input: &urlEntity.ShortenUrl{
 				BaseUrl:    "http://example.com",
 				Short:      "exmpl",
 				Expiration: time.Hour,
@@ -102,7 +102,7 @@ func TestMapShortenUrlEntityToResponse(t *testing.T) {
 			},
 		},
 		"valid_entity_no_custom_short": {
-			input: &entity.ShortenUrl{
+			input: &urlEntity.ShortenUrl{
 				BaseUrl:    "http://example.com",
 				Expiration: time.Hour,
 			},

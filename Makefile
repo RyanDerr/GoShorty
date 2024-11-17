@@ -5,6 +5,9 @@ down:
 	docker compose down
 	docker rmi goshorty-api:local
 
+test:
+	go test -v ./... -cover
+
 clean-db:
 	docker exec -it db redis-cli FLUSHALL
 

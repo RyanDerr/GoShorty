@@ -7,4 +7,3 @@ type ShortenUrl struct {
 	Short      string        `json:"short"`
 	Expiration time.Duration `json:"expiration"`
 }
-

@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/RyanDerr/GoShorty/internal/domain/entity"
+	urlEntity "github.com/RyanDerr/GoShorty/internal/domain/entity/url"
 	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redismock/v9"
 	"github.com/stretchr/testify/assert"
@@ -79,12 +79,12 @@ func TestSaveUrl(t *testing.T) {
 	ctx := &gin.Context{Request: req}
 
 	tests := map[string]struct {
-		short     *entity.ShortenUrl
+		short     *urlEntity.ShortenUrl
 		mockSetup func()
 		expectErr bool
 	}{
 		"save_success": {
-			short: &entity.ShortenUrl{
+			short: &urlEntity.ShortenUrl{
 				BaseUrl:    "http://example.com",
 				Short:      "exmpl",
 				Expiration: time.Hour,
@@ -95,7 +95,7 @@ func TestSaveUrl(t *testing.T) {
 			expectErr: false,
 		},
 		"save_fail": {
-			short: &entity.ShortenUrl{
+			short: &urlEntity.ShortenUrl{
 				BaseUrl:    "http://example.com",
 				Short:      "exmpl",
 				Expiration: time.Hour,
