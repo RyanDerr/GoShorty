@@ -12,6 +12,8 @@ RUN go mod download
 
 # Copy the source code into the container
 COPY ./api ./api
+COPY ./internal ./internal
+COPY ./pkg ./pkg
 
 # Build the Go app
 RUN go build -o /go-shorty ./api/main.go

@@ -5,11 +5,8 @@ services:
     image: goshorty-api:local
     container_name: api
     environment:
-      APP_ENV: "local"
       REDIS_ADDRESS: "redis:6379"
-      REDIS_PASSWORD: ""
-      DOMAIN: "localhost:8080"
-      API_QUOTA: 10
+      PORT: "8080"
     ports:
       - "8080:8080"
     depends_on:

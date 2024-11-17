@@ -20,16 +20,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Go
-        uses: actions/setup-go@v5.1.0
+      - name: Run Go Tests
+        uses: ./.github/workflows/actions/go-test
         with:
           go-version: '>=1.23.0'
-
-      - name: Install dependencies
-        run: go mod download
-
-      - name: Run tests
-        run: go test -v ./...
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4.0.2
