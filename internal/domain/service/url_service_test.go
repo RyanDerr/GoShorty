@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	urlEntity "github.com/RyanDerr/GoShorty/internal/domain/entity/url"
+	"github.com/RyanDerr/GoShorty/internal/domain/entity"
 	"github.com/RyanDerr/GoShorty/internal/domain/repository"
 	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redismock/v9"
@@ -22,19 +22,19 @@ func TestShortenUrl(t *testing.T) {
 	mock, ctx, service := setupMocks(http.MethodPost)
 
 	testCases := map[string]struct {
-		request   *urlEntity.ShortenUrl
-		response  *urlEntity.ShortenUrl
+		request   *entity.ShortenUrl
+		response  *entity.ShortenUrl
 		mockSetup func()
 		wantErr   bool
 		status    int
 	}{
 		"shorten_success": {
-			request: &urlEntity.ShortenUrl{
+			request: &entity.ShortenUrl{
 				BaseUrl:    "http://example.com",
 				Short:      "exmpl",
 				Expiration: time.Hour,
 			},
-			response: &urlEntity.ShortenUrl{
+			response: &entity.ShortenUrl{
 				BaseUrl:    "http://example.com",
 				Short:      "exmpl",
 				Expiration: time.Hour,
@@ -47,7 +47,7 @@ func TestShortenUrl(t *testing.T) {
 			status:  http.StatusCreated,
 		},
 		"shorten_conflict": {
-			request: &urlEntity.ShortenUrl{
+			request: &entity.ShortenUrl{
 				BaseUrl:    "http://example.com",
 				Short:      "exmpl",
 				Expiration: time.Hour,
@@ -59,7 +59,7 @@ func TestShortenUrl(t *testing.T) {
 			status:  http.StatusConflict,
 		},
 		"redis_get_error": {
-			request: &urlEntity.ShortenUrl{
+			request: &entity.ShortenUrl{
 				BaseUrl:    "http://example.com",
 				Short:      "exmpl",
 				Expiration: time.Hour,
@@ -71,7 +71,7 @@ func TestShortenUrl(t *testing.T) {
 			status:  http.StatusInternalServerError,
 		},
 		"redis_set_error": {
-			request: &urlEntity.ShortenUrl{
+			request: &entity.ShortenUrl{
 				BaseUrl:    "http://example.com",
 				Short:      "exmpl",
 				Expiration: time.Hour,

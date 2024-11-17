@@ -3,7 +3,7 @@ package repository
 import (
 	"log"
 
-	urlEntity "github.com/RyanDerr/GoShorty/internal/domain/entity/url"
+    "github.com/RyanDerr/GoShorty/internal/domain/entity"
 	"github.com/gin-gonic/gin"
 	"github.com/redis/go-redis/v9"
 )
@@ -14,7 +14,7 @@ type UrlRepository struct {
 
 type IUrlRepository interface {
 	CheckShortInUse(*gin.Context, string) (bool, error)
-	SaveUrl(*gin.Context, *urlEntity.ShortenUrl) (*urlEntity.ShortenUrl, error)
+	SaveUrl(*gin.Context, *entity.ShortenUrl) (*entity.ShortenUrl, error)
 	GetUrl(*gin.Context, string) (string, error)
 }
 
@@ -40,7 +40,7 @@ func (r *UrlRepository) CheckShortInUse(ctx *gin.Context, short string) (bool, e
 	return val != "", nil
 }
 
-func (r *UrlRepository) SaveUrl(ctx *gin.Context, short *urlEntity.ShortenUrl) (*urlEntity.ShortenUrl, error) {
+func (r *UrlRepository) SaveUrl(ctx *gin.Context, short *entity.ShortenUrl) (*entity.ShortenUrl, error) {
 	err := r.client.Set(ctx, short.Short, short.BaseUrl, short.Expiration).Err()
 
 	if err != nil {

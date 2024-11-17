@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	urlEntity "github.com/RyanDerr/GoShorty/internal/domain/entity/url"
+	"github.com/RyanDerr/GoShorty/internal/domain/entity"
 	"github.com/RyanDerr/GoShorty/pkg/request"
 	"github.com/RyanDerr/GoShorty/pkg/response"
 	"github.com/stretchr/testify/require"
@@ -13,7 +13,7 @@ import (
 func TestMapShortenUrlRequestToEntity(t *testing.T) {
 	testCases := map[string]struct {
 		input           *request.ShortenUrlRequest
-		response        *urlEntity.ShortenUrl
+		response        *entity.ShortenUrl
 		wantErr         bool
 		wantErrContains string
 	}{
@@ -23,7 +23,7 @@ func TestMapShortenUrlRequestToEntity(t *testing.T) {
 				CustomShort: "exmpl",
 				Expiration:  "1h",
 			},
-			response: &urlEntity.ShortenUrl{
+			response: &entity.ShortenUrl{
 				BaseUrl:    "http://example.com",
 				Short:      "exmpl",
 				Expiration: time.Hour,
@@ -35,7 +35,7 @@ func TestMapShortenUrlRequestToEntity(t *testing.T) {
 				Url:        "http://example.com",
 				Expiration: "1h",
 			},
-			response: &urlEntity.ShortenUrl{
+			response: &entity.ShortenUrl{
 				BaseUrl:    "http://example.com",
 				Expiration: time.Hour,
 			},
@@ -46,7 +46,7 @@ func TestMapShortenUrlRequestToEntity(t *testing.T) {
 				Url:         "http://example.com",
 				CustomShort: "exmpl",
 			},
-			response: &urlEntity.ShortenUrl{
+			response: &entity.ShortenUrl{
 				BaseUrl:    "http://example.com",
 				Short:      "exmpl",
 				Expiration: time.Hour * 24,
@@ -84,13 +84,13 @@ func TestMapShortenUrlRequestToEntity(t *testing.T) {
 	}
 }
 
-func TestMapShortenUrlEntityToResponse(t *testing.T) {
+func TestMapShortenentityToResponse(t *testing.T) {
 	testCases := map[string]struct {
-		input    *urlEntity.ShortenUrl
+		input    *entity.ShortenUrl
 		expected *response.ShortenUrlResponse
 	}{
 		"valid_entity": {
-			input: &urlEntity.ShortenUrl{
+			input: &entity.ShortenUrl{
 				BaseUrl:    "http://example.com",
 				Short:      "exmpl",
 				Expiration: time.Hour,
@@ -102,7 +102,7 @@ func TestMapShortenUrlEntityToResponse(t *testing.T) {
 			},
 		},
 		"valid_entity_no_custom_short": {
-			input: &urlEntity.ShortenUrl{
+			input: &entity.ShortenUrl{
 				BaseUrl:    "http://example.com",
 				Expiration: time.Hour,
 			},
@@ -115,7 +115,7 @@ func TestMapShortenUrlEntityToResponse(t *testing.T) {
 
 	for name, tc := range testCases {
 		t.Run(name, func(t *testing.T) {
-			result := MapShortenUrlEntityToResponse(tc.input)
+			result := MapShortenentityToResponse(tc.input)
 			require.Equal(t, tc.expected, result)
 		})
 	}
