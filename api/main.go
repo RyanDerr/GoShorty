@@ -8,23 +8,28 @@ import (
 	"github.com/RyanDerr/GoShorty/internal/domain/entity"
 	"github.com/RyanDerr/GoShorty/pkg/cache"
 	"github.com/RyanDerr/GoShorty/pkg/database"
+	"gorm.io/gorm"
 )
 
-func loadDatabase() {
+func loadDatabase() (*gorm.DB, error) {
 	db, err := database.CreateDatabaseConnection()
 	if err != nil {
-		log.Fatalf("Error connecting to database: %v", err)
+		return nil, err
 	}
 
 	db.AutoMigrate(&entity.User{})
-	db.AutoMigrate(&entity.Entry{})
 
 	log.Println("Database connection successful")
+	return db, nil
 }
 
 func main() {
 
-	loadDatabase()
+	db, err := loadDatabase()
+	if err != nil {
+		log.Fatalf("Error loading database: %v", err)
+	}
+
 	redis, err := cache.CreateRedisClient(0)
 
 	if err != nil {
@@ -33,6 +38,6 @@ func main() {
 
 	port := os.Getenv("PORT")
 
-	app := routes.SetupRouter(redis)
+	app := routes.SetupRouter(redis, db)
 	app.Run(":" + port)
 }
