@@ -38,6 +38,54 @@ func TestUserAuthInput_Validate(t *testing.T) {
 			wantErr:         true,
 			wantErrContains: "username is required",
 		},
+		"short_username": {
+			input: &UserAuthInput{
+				Username: "usr",
+				Password: "password123",
+			},
+			wantErr:         true,
+			wantErrContains: "username must be at least 4 characters",
+		},
+		"long_username": {
+			input: &UserAuthInput{
+				Username: "thisisaverylongusernamethatexceedsthemaxlimit",
+				Password: "password123",
+			},
+			wantErr:         true,
+			wantErrContains: "username must be at most 32 characters",
+		},
+		"invalid_username": {
+			input: &UserAuthInput{
+				Username: "invalid_user!",
+				Password: "password123",
+			},
+			wantErr:         true,
+			wantErrContains: "username must be alphanumeric",
+		},
+		"short_password": {
+			input: &UserAuthInput{
+				Username: "testuser",
+				Password: "short",
+			},
+			wantErr:         true,
+			wantErrContains: "password must be at least 8 characters",
+		},
+		"long_password": {
+			input: &UserAuthInput{
+				Username: "testuser",
+				Password: "thisisaverylongpasswordthatexceedsthemaxlimit",
+			},
+			wantErr:         true,
+			wantErrContains: "password must be at most 32 characters",
+		},
+		"invalid_password": {
+			input: &UserAuthInput{
+				Username: "testuser",
+				Password: "invalid password!",
+			},
+			wantErr:         true,
+			wantErrContains: "password contains invalid characters",
+		},
 	}
 
 	for name, tc := range testCases {

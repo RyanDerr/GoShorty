@@ -1,9 +1,9 @@
 package response
 
-type JwtReponse struct {
+type JwtResponse struct {
 	Jwt string
 }
 
-func (r *JwtReponse) String() string {
+func (r *JwtResponse) String() string {
 	return r.Jwt
 }
