@@ -3,7 +3,7 @@ package repository
 import (
 	"log"
 
-	"github.com/RyanDerr/GoShorty/internal/domain/entity"
+    "github.com/RyanDerr/GoShorty/internal/domain/entity"
 	"github.com/gin-gonic/gin"
 	"github.com/redis/go-redis/v9"
 )

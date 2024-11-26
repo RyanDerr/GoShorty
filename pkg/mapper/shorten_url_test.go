@@ -84,7 +84,7 @@ func TestMapShortenUrlRequestToEntity(t *testing.T) {
 	}
 }
 
-func TestMapShortenUrlEntityToResponse(t *testing.T) {
+func TestMapShortenentityToResponse(t *testing.T) {
 	testCases := map[string]struct {
 		input    *entity.ShortenUrl
 		expected *response.ShortenUrlResponse
@@ -115,7 +115,7 @@ func TestMapShortenUrlEntityToResponse(t *testing.T) {
 
 	for name, tc := range testCases {
 		t.Run(name, func(t *testing.T) {
-			result := MapShortenUrlEntityToResponse(tc.input)
+			result := MapShortenentityToResponse(tc.input)
 			require.Equal(t, tc.expected, result)
 		})
 	}

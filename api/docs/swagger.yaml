@@ -9,6 +9,21 @@ definitions:
       url:
         type: string
     type: object
+  request.UserAuthInput:
+    properties:
+      password:
+        type: string
+      username:
+        type: string
+    required:
+    - password
+    - username
+    type: object
+  response.JwtReponse:
+    properties:
+      jwt:
+        type: string
+    type: object
   response.ResponseErrorModel:
     properties:
       code:
@@ -25,6 +40,13 @@ definitions:
       url:
         type: string
     type: object
+  response.UserResponse:
+    properties:
+      id:
+        type: integer
+      username:
+        type: string
+    type: object
 host: localhost
 info:
   contact: {}
@@ -32,6 +54,78 @@ info:
   title: GoShorty API
   version: 0.1.0
 paths:
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticate a user and return a JWT token
+      parameters:
+      - description: User credentials
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/request.UserAuthInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: JWT token
+          schema:
+            $ref: '#/definitions/response.JwtReponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ResponseErrorModel'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.ResponseErrorModel'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.ResponseErrorModel'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ResponseErrorModel'
+      summary: Login a user
+      tags:
+      - Auth
+  /auth/register:
+    post:
+      consumes:
+      - application/json
+      description: Register a new user with a username and password
+      parameters:
+      - description: User credentials
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/request.UserAuthInput'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: User registered successfully
+          schema:
+            $ref: '#/definitions/response.UserResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ResponseErrorModel'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/response.ResponseErrorModel'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ResponseErrorModel'
+      summary: Register a new user
+      tags:
+      - Auth
   /url/{short}:
     get:
       consumes:

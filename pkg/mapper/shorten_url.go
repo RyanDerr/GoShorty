@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/RyanDerr/GoShorty/internal/domain/entity"
+    "github.com/RyanDerr/GoShorty/internal/domain/entity"
 	"github.com/RyanDerr/GoShorty/pkg/request"
 	"github.com/RyanDerr/GoShorty/pkg/response"
 	"github.com/google/uuid"
@@ -41,7 +41,7 @@ func MapShortenUrlRequestToEntity(req *request.ShortenUrlRequest) (*entity.Short
 	}, nil
 }
 
-func MapShortenUrlEntityToResponse(entity *entity.ShortenUrl) *response.ShortenUrlResponse {
+func MapShortenentityToResponse(entity *entity.ShortenUrl) *response.ShortenUrlResponse {
 	return &response.ShortenUrlResponse{
 		Url:         entity.BaseUrl,
 		CustomShort: entity.Short,

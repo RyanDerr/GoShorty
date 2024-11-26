@@ -65,7 +65,7 @@ func (h *UrlHandler) ShortenUrl(ctx *gin.Context) {
 	}
 
 	log.Printf("Shortened URL: %s", res.BaseUrl)
-	response.ResponseCreatedWithData(ctx, mapper.MapShortenUrlEntityToResponse(res))
+	response.ResponseCreatedWithData(ctx, mapper.MapShortenentityToResponse(res))
 }
 
 // ResolveUrl godoc

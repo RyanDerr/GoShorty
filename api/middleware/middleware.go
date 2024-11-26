@@ -1,21 +1,25 @@
-package api
+package middleware
 
 import (
+	"net/http"
+
+	"github.com/RyanDerr/GoShorty/pkg/helper"
+	"github.com/RyanDerr/GoShorty/pkg/response"
 	"github.com/gin-gonic/gin"
 )
 
-// func AuthMiddleware() gin.HandlerFunc {
-// 	return func(c *gin.Context) {
-// 		err := jwttoken.TokenValid(c.Request)
-// 		if err != nil {
-// 			response.ResponseError(c, err.Error(), http.StatusUnauthorized)
-// 			c.Abort()
-// 			return
-// 		}
+func JWTAuthMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		err := helper.ValidateJWT(c)
+		if err != nil {
+			response.ResponseError(c, err.Error(), http.StatusUnauthorized)
+			c.Abort()
+			return
+		}
 
-// 		c.Next()
-// 	}
-// }
+		c.Next()
+	}
+}
 
 func CORSMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {

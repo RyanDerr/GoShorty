@@ -7,12 +7,62 @@ services:
     environment:
       REDIS_ADDRESS: "redis:6379"
       PORT: "8080"
+      DB_CONNECTION_STRING: "host=user_db port=5432 user=postgres password=password dbname=postgres sslmode=disable"
+      JWT_PRIVATE_KEY: |
+          -----BEGIN PRIVATE KEY-----
+          MIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQCjd2JW7IHugwZP
+          YpdKpbRkm9J4F3rVNsI848gda4J6QVguDPgTqCuCa+8I3+WcPW6/+Oe/GaNgceVt
+          k0zQdr8gQta+O/BZYoYR4y+RlV/rOijEa7A5rtiLmF9jpK2o6f3v9cJf7HOwN0rv
+          c61fXwCOBGI+g/IfEOllpOn23R89fIdItHfvMGSOFB7YPFol3cpzBYVULSL8qDva
+          v4L4kmV9NyJAJ4qfsd3e/a9LDRrtdQqZpsflHhOaSixsremyEr2w988LEI/c1L/d
+          znQ30gr6I9yvLl34ZNXylyukIFBy+5+pHXRXl+DVIMF5WWgfniWdmnX7inEUFgN8
+          b6wSV8VNAgMBAAECggEABukMmLUd1wnl8eQuliLEKf6mWppPgIT0mCNe+dNqLCXo
+          BuZYdGhHEpfifoMMj1rPfEEW9u6sB+84rjWsaSGj+capklgxVG4EUexDPgnNCMIo
+          KAmPZRjdoaUa3zj+eGYP7J18jpaN23Sy78V5nk8DVH2d85ubWDHcVAYxN9ToNa6l
+          JWmoQ63VcKzF6le7yrP0gD3cEkaKfADSFLxkWSgYLiX6YklGCXs5mmQtF0Veo0jH
+          87Dn7w/owmyTLH44q3fIBJUSWuap8RoJyQV9zAxm1imDz4+1t+0SmE0y7Jj7WX+O
+          nwoub83aq7BjSIAloqxHwKq5n5kNJmBcVygjfgzqsQKBgQDdqxM0T18TUwTF2psJ
+          Lhfz1soD1pkBm73GA1UXf2EZU8WUbf9AivocMc4crWX1XaUiilE3py12JT9ep7hl
+          MgbOW2PsTtvCpiaA4w3vNhFgGPlboZR0wRDODkwbkLJ2gSjUpnkH48pLquUVUWcJ
+          BD4MUgvhgOvfl+Gr0gu38/zLmQKBgQC8yKlJah96fMjKT6tgLIL3cOijb5HAB2Vw
+          kb88tqUvT1wo8IsJj4rLjYMm7RN/IaFQYmq2RLMjUSjHetDpSxrQHW9khDV2hBG6
+          MTKPfaU8FWMOg4EfEvDtefUbpRwUk1nT3zlsl6DQ8fRu24lj4dzlC/CvJ0Guaehq
+          AXs5oji31QKBgHDIt2e5LrXFWrtUg+eC1VsSoQyc5pLD7CXQ0j23aO8bCX+BDAuJ
+          6sHnsWgz7ZmPQRM27yXy4JWpU/nUOmT6tC3QoCG+6d+67AJOBGv+xY5whodRyhgx
+          l1xQN/cag0L6aozv+srB4s7nL9HN7i/PQcbBBByDnP/R5lem8qFw+eGZAoGAMW71
+          7TRtw7wzM87C2G8vaC3XrRxE9Ry6skxn4DUPciD8x/ec4McGmCCZLDM+PLcIr6zl
+          to6svd29qOZ/F+fDwKVEivSXr04L+k5xp+NFxkLvaliDEij6j6S0yyVkAftHtVQp
+          jEb0JGKHGBRCmLYHCq8iuiq0Z0ByTHfQ1Zml8nUCgYAk7TJrWhADpGWptP2DxLZE
+          yejUgIPi0T0t/4HrWGu7kV5S0yVEod3b1RTwGzmXLc1fYwpRWOlOPKOaQ4kfMjMX
+          lmy0o0EepMrjEb4+vDvw3k8Ul4DAZE7XlAGbj/0yxkefx2O3T5+fdnltv1mg2KMV
+          HD/4YsTkSX8HMzFVOtvNjg==
+          -----END PRIVATE KEY-----
     ports:
       - "8080:8080"
     depends_on:
-      - redis
+      redis:
+        condition: service_healthy
+      user_db:
+        condition: service_healthy
   redis: 
     image: redis:alpine
     ports:
       - "6379:6379"
     container_name: redis
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  user_db:
+    image: postgres:17-alpine
+    ports:
+      - "5432:5432"
+    container_name: user_db
+    environment:
+      - POSTGRES_PASSWORD=password
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
