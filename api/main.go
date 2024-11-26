@@ -17,27 +17,29 @@ func loadDatabase() (*gorm.DB, error) {
 		return nil, err
 	}
 
-	db.AutoMigrate(&entity.User{})
+	if err := db.AutoMigrate(&entity.User{}); err != nil {
+		return nil, err
+	}
 
 	log.Println("Database connection successful")
 	return db, nil
 }
 
 func main() {
-
 	db, err := loadDatabase()
 	if err != nil {
 		log.Fatalf("Error loading database: %v", err)
 	}
 
 	redis, err := cache.CreateRedisClient(0)
-
 	if err != nil {
 		log.Fatalf("Error creating Redis client: %v", err)
 	}
 
 	port := os.Getenv("PORT")
-
 	app := routes.SetupRouter(redis, db)
-	app.Run(":" + port)
+
+	if err := app.Run(":" + port); err != nil {
+		log.Fatalf("Error starting server: %v", err)
+	}
 }
