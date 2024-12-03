@@ -32,6 +32,7 @@ func NewUrlHandler(urlService service.IUrlService) *UrlHandler {
 //	@Success		201			{object}	response.ShortenUrlResponse	"Shortened URL"
 //	@Failure		400			{object}	response.ResponseErrorModel	"Bad Request"
 //	@Failure		409			{object}	response.ResponseErrorModel	"Conflict"
+//	@Failure		429			{object}	response.ResponseErrorModel	"Rate Limit Exceeded"
 //	@Failure		500			{object}	response.ResponseErrorModel	"Internal Server Error"
 //	@Router			/url/shorten [post]
 func (h *UrlHandler) ShortenUrl(ctx *gin.Context) {
@@ -79,6 +80,7 @@ func (h *UrlHandler) ShortenUrl(ctx *gin.Context) {
 //	@Success		301		{string}	string						"Redirect to original URL"
 //	@Failure		400		{object}	response.ResponseErrorModel	"Bad Request"
 //	@Failure		404		{object}	response.ResponseErrorModel	"Not Found"
+//	@Failure		429		{object}	response.ResponseErrorModel	"Rate Limit Exceeded"
 //	@Failure		500		{object}	response.ResponseErrorModel	"Internal Server Error"
 //	@Router			/url/{short} [get]
 func (h *UrlHandler) ResolveUrl(ctx *gin.Context) {

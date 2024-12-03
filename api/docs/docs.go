@@ -43,7 +43,7 @@ const docTemplate = `{
                     "200": {
                         "description": "JWT token",
                         "schema": {
-                            "$ref": "#/definitions/response.JwtReponse"
+                            "$ref": "#/definitions/response.JwtResponse"
                         }
                     },
                     "400": {
@@ -168,6 +168,12 @@ const docTemplate = `{
                             "$ref": "#/definitions/response.ResponseErrorModel"
                         }
                     },
+                    "429": {
+                        "description": "Rate Limit Exceeded",
+                        "schema": {
+                            "$ref": "#/definitions/response.ResponseErrorModel"
+                        }
+                    },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
@@ -218,6 +224,12 @@ const docTemplate = `{
                             "$ref": "#/definitions/response.ResponseErrorModel"
                         }
                     },
+                    "429": {
+                        "description": "Rate Limit Exceeded",
+                        "schema": {
+                            "$ref": "#/definitions/response.ResponseErrorModel"
+                        }
+                    },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
@@ -258,7 +270,7 @@ const docTemplate = `{
                 }
             }
         },
-        "response.JwtReponse": {
+        "response.JwtResponse": {
             "type": "object",
             "properties": {
                 "jwt": {

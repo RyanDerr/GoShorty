@@ -29,7 +29,7 @@ const (
 //	@schemes		http
 //	@schemes		https
 //	@description	This is the API for GoShorty, a URL shortening service
-func SetupRouter(redis *redis.Client, db *gorm.DB) *gin.Engine {
+func SetupRouter(redis *redis.Client, db *gorm.DB, shortenUrlRateLimit, getShortUrlRateLimit *middleware.RateLimiter) *gin.Engine {
 	router := gin.Default()
 
 	userHandler, urlHandler := setupHandlers(redis, db)
@@ -45,8 +45,8 @@ func SetupRouter(redis *redis.Client, db *gorm.DB) *gin.Engine {
 
 	shorten := router.Group(urlRoute).Use(middleware.JWTAuthMiddleware())
 	{
-		shorten.POST(Shorten, urlHandler.ShortenUrl)
-		shorten.GET(Resolve, urlHandler.ResolveUrl)
+		shorten.POST(Shorten, shortenUrlRateLimit.IsRateLimited(), urlHandler.ShortenUrl)
+		shorten.GET(Resolve, getShortUrlRateLimit.IsRateLimited(), urlHandler.ResolveUrl)
 	}
 
 	return router

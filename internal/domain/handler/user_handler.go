@@ -64,7 +64,7 @@ func (h *UserHandler) RegisterUser(ctx *gin.Context) {
 //	@Accept			json
 //	@Produce		json
 //	@Param			user	body		request.UserAuthInput		true	"User credentials"
-//	@Success		200		{object}	response.JwtReponse			"JWT token"
+//	@Success		200		{object}	response.JwtResponse		"JWT token"
 //	@Failure		400		{object}	response.ResponseErrorModel	"Bad Request"
 //	@Failure		401		{object}	response.ResponseErrorModel	"Unauthorized"
 //	@Failure		404		{object}	response.ResponseErrorModel	"Not Found"
